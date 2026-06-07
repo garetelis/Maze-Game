@@ -3,6 +3,7 @@ This is a file to run in VS Code or any other Java compiler that allows you to s
 
 Try it out! 
 With code: https://codehs.com/sandbox/garrettellis/mazegame
+
 Without code: https://codehs.com/sandbox/garrettellis/mazegame/run
 
 This demo runs in your browser so no need to install anything fancy, just click in and play!
