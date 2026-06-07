@@ -1,0 +1,197 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Scanner;
+public class Mazegame {
+    public static String[][] maze = {{}};
+    public static void main(String[] args) {
+        try (Scanner input = new Scanner(System.in)) {
+            // Get the input for how large the user wants the maze
+            System.out.print("How large do you want your maze to be? Small, medium, large, or xlarge (You will need a big monitor!): ");
+            String size = input.next();
+            
+            // Makes sure the input is valid
+            while (!(size.equals("small") || size.equals("medium") || size.equals("large") || size.equals("xlarge"))) {
+                System.out.println("\nThe size must be \"small\", \"medium\", \"large\", or \"xlarge\"");
+                System.out.print("How large do you want your maze to be? Small, medium, large, or xlarge (You will need a big monitor!): ");
+                size = input.next();
+            }
+            
+            // Sets the size based on the input
+            switch (size) {
+                case "small" -> maze = new String[13][13];
+                case "medium" -> maze = new String[17][17];
+                case "large" -> maze = new String[23][23];
+                case "xlarge" -> maze = new String[27][27];
+            }
+            
+            // Creates an ArrayList and adds each valid jump-off point to create the maze from
+            ArrayList<int[]> notClear = new ArrayList<>();
+            for (int i = 2; i < maze.length - 1; i += 2) {
+                for (int j = 2; j < maze.length - 1; j += 2) {
+                    int[] point = {i, j};
+                    notClear.add(point);
+                }
+            }
+            for (int i = 0; i < maze.length; i++) {
+                maze[0][i] = "W";
+                maze[maze.length - 1][i] = "W";
+                maze[i][0] = "W";
+                maze[i][maze.length - 1] = "W";
+            }
+
+            // Picks a random valid jump-off point
+            int[] current = notClear.get((int)(Math.random() * notClear.size()));
+
+            // Starts the recursive method that creates the maze
+            move(current);
+
+            // Initializes a few variables: 
+            // The player's starting spot, the end tile, and a list of valid columns to put the starting point
+            int[] player;
+            int[] end;
+            ArrayList<Integer> cols = new ArrayList<>();
+            for (int i = 2; i < maze.length - 3; i += 2) {
+                cols.add(i);
+            }
+
+            // Randomly places the starting spot using the list of valid columns
+            // and places the end tile directly opposite the start tile
+            if ((int)(Math.random() * 2) == 0) {
+                int col = cols.get((int)(Math.random() * cols.size()));
+                maze[1][col] = "S";
+                maze[maze.length - 2][maze.length - col - 1] = "W";
+                player = new int[]{1, col};
+                end = new int[]{maze.length - 2, maze.length - col - 1};
+            } else {
+                int col = cols.get((int)(Math.random() * cols.size()));
+                maze[col][1] = "S";
+                maze[maze.length - col - 1][maze.length - 2] = "W";
+                player = new int[]{col, 1};
+                end = new int[]{maze.length - col - 1, maze.length - 2};
+            }
+
+            // Removes the default "null" tiles from the maze
+            for (int i = 0; i < maze.length; i++) {
+                for (int j = 0; j < maze.length; j++) {
+                    if (maze[i][j] == null) {
+                        maze[i][j] = " ";
+                    }
+                }
+            }
+
+            // Movement and actual maze-solving action
+            while (!Arrays.equals(player, end)) {
+                // Gets the input and makes sure it's valid
+                System.out.print("Make your move (w, a, s, d): ");
+                String move = input.nextLine();
+                move = move.toLowerCase();
+                if (!move.equals("w") && !move.equals("a") && !move.equals("s") && !move.equals("d")) {
+                    System.out.println("Invalid input! You must put only 'w', 'a', 's', or 'd'");
+                } else {
+                    // Moves depending on the input
+                    switch (move) {
+                        case "w" -> {
+                            if (maze[player[0] - 1][player[1]].equals("W")) {
+                                maze[player[0]][player[1]] = "W";
+                                player[0] -= 1;
+                                maze[player[0]][player[1]] = "S";
+                            } else {
+                                System.out.println("\nYou cannot move there!");
+                            }
+                        }
+                        case "a" -> {
+                            if (maze[player[0]][player[1] - 1].equals("W")) {
+                                maze[player[0]][player[1]] = "W";
+                                player[1] -= 1;
+                                maze[player[0]][player[1]] = "S";
+                            } else {
+                                System.out.println("\nYou cannot move there!");
+                            }
+                        }
+                        case "s" -> {
+                            if (maze[player[0] + 1][player[1]].equals("W")) {
+                                maze[player[0]][player[1]] = "W";
+                                player[0] += 1;
+                                maze[player[0]][player[1]] = "S";
+                            } else {
+                                System.out.println("\nYou cannot move there!");
+                            }
+                        }
+                        case "d" -> {
+                            if (maze[player[0]][player[1] + 1].equals("W")) {
+                                maze[player[0]][player[1]] = "W";
+                                player[1] += 1;
+                                maze[player[0]][player[1]] = "S";
+                            } else {
+                                System.out.println("\nYou cannot move there!");
+                            }
+                        }
+                    }
+                }
+                printMaze();
+            }
+
+            // You did it!
+            System.out.println("Congratulations! You beat the maze!");
+            System.out.println();
+        }
+    }
+
+    // Recursive method to branch out and create the randomized maze
+    public static void move(int[] current) {
+        maze[current[0]][current[1]] = "W";
+
+        // Creates and fills a list with the valid neighbors (meaning they have not been hit yet)
+        ArrayList<int[]> valid = new ArrayList<>();
+        if (maze[current[0] + 2][current[1]] == null) {
+            int[] n = {current[0] + 2, current[1]};
+            valid.add(n);
+        } if (maze[current[0] - 2][current[1]] == null) {
+            int[] n = {current[0] - 2, current[1]};
+            valid.add(n);
+        } if (maze[current[0]][current[1] + 2] == null) {
+            int[] n = {current[0], current[1] + 2};
+            valid.add(n);
+        } if (maze[current[0]][current[1] - 2] == null) {
+            int[] n = {current[0], current[1] - 2};
+            valid.add(n);
+        }
+
+        // Shuffles the list to make the maze more random
+        Collections.shuffle(valid);
+
+        // For each neighbor it branches out from the current point to it and calls the method on the neighbor
+        for (int[] neighbor : valid) {
+            if (maze[neighbor[0]][neighbor[1]] == null)  {
+                maze[(current[0] + neighbor[0]) / 2][(current[1] + neighbor[1]) / 2] = "W";
+                move(neighbor);
+            }
+            maze[neighbor[0]][neighbor[1]] = "W";
+        }
+    }
+
+    // Method that prints the maze as you see it in the terminal
+    public static void printMaze() {
+        for (String[] row : maze) {
+            for (String cell : row) {
+                switch (cell) {
+                    case "S" -> System.out.print("O ");
+                    case " " -> System.out.print("\u25A0 ");
+                    default -> System.out.print("  ");
+                }
+            }
+            System.out.println();
+        }
+    }
+
+    // Prints exactly what is held in the maze for debugging purposes
+    public static void printRaw() {
+        for (String[] row : maze) {
+            for (String cell : row) {
+                    System.out.print(cell + " ");
+            }
+            System.out.println();
+        }
+    }
+}
